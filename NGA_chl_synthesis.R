@@ -4,21 +4,35 @@
 # author: Gwenn Hennon
 # email: gmhennon@gmail.com
 
-library(tidyverse)
+# Housekeeping (borrowed from Angel Chen's scripts)#
+# Load necessary libraries
+# If you don't have the "librarian" package, uncomment the next line and run it to install the package
+install.packages("librarian")
+librarian::shelf(tidyverse, googledrive)
+
 
 # define file path
-path <- "~/Desktop/NGA-LTER/proc_data/"
+path <- "~/Desktop/NGA-LTER/proc_data"
 
 #read in chlorophyll time series
-chl.raw <- read.csv("~/Desktop/NGA-LTER/proc_data/Seward Line chl timeseries dataset 1997-2022.csv")
+#identify all csv files on the google drive
+#raw_NGA_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/0/folders/14lYLzawcQUy0ruAG6norhJ4VcocfPk8M"), type = "csv") 
+#identify the ID of the one file I want
+raw_NGA_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/0/folders/14lYLzawcQUy0ruAG6norhJ4VcocfPk8M")) %>%
+  dplyr::filter(name %in% c("Seward Line chl timeseries dataset 1997-2022.csv"))
 
+#load raw chlorophyll data from google drive and then bring into R
+googledrive::drive_download(file = raw_NGA_ids[1, ]$id, overwrite = T,
+                                       path = file.path(path, raw_NGA_ids[1, ]$name))
+chl.raw <- read.csv( file = file.path(path,raw_NGA_ids[1, ]$name))
 
+#Make a new object and replace 'NR' with NA to make missing values more computer readable
 chl = chl.raw
 chl[chl == 'NR'] = NA
 
 chl <- chl[!is.na(chl$Date_Time),]
 
-#make sure time is interpreted correctly
+#make sure time is interpreted correctly by R
 chl$Date_Time <- strptime(chl$Date_Time, format="%m/%d/%Y %H:%M")
 
 
@@ -70,12 +84,13 @@ for(c in cruises){
   index= index+1
 }
 
-#get the month to split into seasons to remove inter annual signals
+#get the month to split into seasons to remove inter-annual signals
 Month <-as.numeric(format(chl.area$Date_Time, format="%m"))
 #subset by fall and spring
 chl.fall <- chl.area[which(Month > 7),]
 chl.spring <- chl.area[which(Month < 6),]
 
+#test to look for linear correlations
 lm.shelf <-lm(chl.spring$Shelf_ave~chl.spring$Date_Time)
 lm.slope <-lm(chl.spring$Slope_ave~chl.spring$Date_Time)
 
