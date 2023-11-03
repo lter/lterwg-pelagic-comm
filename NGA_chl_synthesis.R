@@ -16,14 +16,13 @@ path <- "~/Desktop/NGA-LTER/proc_data"
 
 #read in chlorophyll time series
 #identify all csv files on the google drive
-#raw_NGA_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/0/folders/14lYLzawcQUy0ruAG6norhJ4VcocfPk8M"), type = "csv") 
+#raw_NGA_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/1/folders/10KgTVkAMODzgvfaf6c-XI-eelV_PtUSk"), type = "csv") 
 #identify the ID of the one file I want
-raw_NGA_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/0/folders/14lYLzawcQUy0ruAG6norhJ4VcocfPk8M")) %>%
+raw_NGA_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/1/folders/10KgTVkAMODzgvfaf6c-XI-eelV_PtUSk")) %>%
   dplyr::filter(name %in% c("Seward Line chl timeseries dataset 1997-2022.csv"))
 
 #load raw chlorophyll data from google drive and then bring into R
-googledrive::drive_download(file = raw_NGA_ids[1, ]$id, overwrite = T,
-                                       path = file.path(path, raw_NGA_ids[1, ]$name))
+googledrive::drive_download(file = raw_NGA_ids[1, ]$id, overwrite = T, path = file.path(path, raw_NGA_ids[1, ]$name))
 chl.raw <- read.csv( file = file.path(path,raw_NGA_ids[1, ]$name))
 
 #Make a new object and replace 'NR' with NA to make missing values more computer readable
@@ -127,24 +126,6 @@ lm.slope <-lm(chl.spring$Slope_ave~chl.spring$Date_Time)
 lm.shelf <-lm(chl.spring$Shelf_ave~chl.spring$Date_Time)
 lm.slope <-lm(chl.spring$Slope_ave~chl.spring$Date_Time)
 
-#make some plots
-plot(chl.spring$Date_Time, chl.spring$Shelf_ave, col="green",type="p", ylim=c(0,3.5), xlab="Date", ylab="mean log10 Chlorophyll", main="NGA-LTER Spring")
-points(chl.spring$Date_Time, chl.spring$Slope_ave, col="blue", type="p")
-lines(chl.spring$Date_Time, chl.spring$Shelf_5yr_mean, col="green")
-lines(chl.spring$Date_Time, chl.spring$Slope_5yr_mean, col="blue")
-legend("topright", c("shelf", "slope"), col=c("green","blue"), lty=1, pch=1)
-
-plot(chl.fall$Date_Time, chl.fall$Shelf_ave, col="green",type="p", ylim=c(0,3.5), xlab="Date", ylab="mean log10 Chlorophyll", main="NGA-LTER Fall")
-points(chl.fall$Date_Time, chl.fall$Slope_ave, col="blue", type="p")
-lines(chl.fall$Date_Time, chl.fall$Shelf_5yr_mean, col="green")
-lines(chl.fall$Date_Time, chl.fall$Slope_5yr_mean, col="blue")
-legend("topright", c("shelf", "slope"), col=c("green","blue"), lty=1, pch=1)
- 
-#Write outfiles
-write.csv(chl.area, file= file.path(path,"Seward_Line_Chl.csv"))
-write.csv(chl.spring, file= file.path(path,"Seward_Line_Chl_spring.csv"))
-write.csv(chl.fall, file= file.path(path,"Seward_Line_Chl_fall.csv"))
-
 #calculate the standard deviation of chlorophyll time series
 sd(chl.spring$Shelf_ave, na.rm=T)
 sd(chl.spring$Slope_ave, na.rm=T)
@@ -153,3 +134,25 @@ sd(chl.fall$Slope_ave, na.rm=T)
 #calculate the standard deviation of 5 year smoothed chl time series
 sd(chl.spring$Shelf_5yr_mean, na.rm=T)
 sd(chl.spring$Slope_5yr_mean, na.rm=T)
+
+#make some plots
+plot(chl.spring$Date_Time, chl.spring$Shelf_ave, col="green",type="p", ylim=c(0,4), xlab="Date", ylab="mean log10 Chlorophyll", main="NGA-LTER GAK Line Spring")
+points(chl.spring$Date_Time, chl.spring$Slope_ave, col="blue", type="p")
+lines(chl.spring$Date_Time, chl.spring$Shelf_5yr_mean, col="green")
+lines(chl.spring$Date_Time, chl.spring$Slope_5yr_mean, col="blue")
+legend("topright", c("shelf", "slope"), col=c("green","blue"), lty=1, pch=1)
+mtext(side=1,line=-1, adj=0, text= paste( "SD =",round(sd(chl.spring$Shelf_5yr_mean, na.rm=T), digits=2)))
+
+plot(chl.fall$Date_Time, chl.fall$Shelf_ave, col="green",type="p", ylim=c(0,3.5), xlab="Date", ylab="mean log10 Chlorophyll", main="NGA-LTER GAK line Fall")
+points(chl.fall$Date_Time, chl.fall$Slope_ave, col="blue", type="p")
+lines(chl.fall$Date_Time, chl.fall$Shelf_5yr_mean, col="green")
+lines(chl.fall$Date_Time, chl.fall$Slope_5yr_mean, col="blue")
+legend("topright", c("shelf", "slope"), col=c("green","blue"), lty=1, pch=1)
+mtext(side=1,line=-1, adj=0, text= paste( "SD =",round(sd(chl.fall$Shelf_5yr_mean, na.rm=T), digits=2)))
+
+#Write outfiles
+write.csv(chl.area, file= file.path(path,"GAK_bot_Chl.csv"))
+write.csv(chl.spring, file= file.path(path,"GAK_bot_Chl_spring.csv"))
+write.csv(chl.fall, file= file.path(path,"GAK_bot_Chl_fall.csv"))
+
+#write some code for pushing files to google drive...
