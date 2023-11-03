@@ -30,6 +30,7 @@ chl.raw <- read.csv( file = file.path(path,raw_NGA_ids[1, ]$name))
 chl = chl.raw
 chl[chl == 'NR'] = NA
 
+#remove any rows with NAs in date/time
 chl <- chl[!is.na(chl$Date_Time),]
 
 #make sure time is interpreted correctly by R
@@ -66,6 +67,13 @@ for(i in 1:length(cruises)){
   }
 }
 
+#remove missing stations where there are not chl data
+chl.int <- chl.int[which(chl.int$Int_Tot_Chl > 0),]
+
+#Log transform the chlorophyll data
+hist(log10(chl.int$Int_Tot_Chl))
+chl.int$Log_Tot_Chl <- log10(chl.int$Int_Tot_Chl)
+
 #average by shelf v. slope
 shelf.stations <- c("GAK1", "GAK2", "GAK3", "GAK4", "GAK5","GAK6","GAK7", "GAK8","GAK9")
 slope.stations <- c("GAK10","GAK11","GAK12","GAK13","GAK14","GAK15")
@@ -79,8 +87,8 @@ for(c in cruises){
   sub.slope <- sub[which(sub$Station %in% slope.stations),]
   chl.area$Cruise[index] <-c
   chl.area$Date_Time[index] <- mean(sub$Date_Time, na.rm=T)
-  chl.area$Shelf_ave[index] <- mean(sub.shelf$Int_Tot_Chl, na.rm=T)
-  chl.area$Slope_ave[index] <- mean(sub.slope$Int_Tot_Chl, na.rm=T)
+  chl.area$Shelf_ave[index] <- mean(sub.shelf$Log_Tot_Chl, na.rm=T)
+  chl.area$Slope_ave[index] <- mean(sub.slope$Log_Tot_Chl, na.rm=T)
   index= index+1
 }
 
@@ -95,6 +103,6 @@ lm.shelf <-lm(chl.spring$Shelf_ave~chl.spring$Date_Time)
 lm.slope <-lm(chl.spring$Slope_ave~chl.spring$Date_Time)
 
 #Write outfiles
-write.csv(chl.area, file= paste0(path,"Seward_Line_Chl.csv"))
-write.csv(chl.spring, file= paste0(path,"Seward_Line_Chl_spring.csv"))
-write.csv(chl.fall, file= paste0(path,"Seward_Line_Chl_fall.csv"))
+write.csv(chl.area, file= file.path(path,"Seward_Line_Chl.csv"))
+write.csv(chl.spring, file= file.path(path,"Seward_Line_Chl_spring.csv"))
+write.csv(chl.fall, file= file.path(path,"Seward_Line_Chl_fall.csv"))
