@@ -2,7 +2,7 @@
 #        Pelagic Community Structure 
 #         Chlorophyll Extraction         
 ## ------------------------------------------ ##
-# Script author(s): Angel Chen
+# Script author(s): Angel Chen, Nick Lyon
 
 # Purpose: Extracts the chlorophyll values that are inside the boundaries of the GAK shapefile
 
@@ -105,3 +105,16 @@ chloro_actual <- chloro_extract %>%
 
 # Final structure check
 dplyr::glimpse(chloro_actual)
+
+# Create the export file name
+tidy_filename <- "NGA_chlorophyll_extraction.csv"
+
+# Create necessary sub-folder(s)
+dir.create(path = file.path("tidy"), showWarnings = F)
+
+# Export locally
+write.csv(x = chloro_actual, file = file.path("tidy", tidy_filename), na = "NA", row.names = F)
+
+# Export to Drive
+googledrive::drive_upload(media = file.path("tidy", tidy_filename), overwrite = T,
+                          path = googledrive::as_id("https://drive.google.com/drive/u/0/folders/1_-dUGVUX8D7z_Eg0nYGazFCCAsfmcZir"))
