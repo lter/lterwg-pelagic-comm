@@ -67,15 +67,17 @@ mz.spring <- mz.area[which(Month < 6),]
 
 #function for calculating a smooth of parameter with k= window size between 5 and big number (credit Tom Kelly)
 sma = function(parameter, k = 100) {
-  # if (k %% 2 == 0) {
-  #   k = k - 1
-  # }
+   if (k %% 2 == 1) {
+     k = (k - 1) / 2
+   } else {
+    stop('Please use an odd size window.')
+  }
   sma = rep(NA, length(parameter)) ## need this vector to be the same length as parameter
   for (i in 1:length(parameter)) {
-    if (i < k/2 | i > length(parameter) - k/2) {
+    if (i <= k | i >= length(parameter) - k + 1) {
       sma[i] = NA
     } else {
-      series = c((i - floor(k/2)):(i + floor(k/2)))
+      series = c((i - k):(i + k))
       #message(k, ' = k\t', length(series), ' = series')
       sma[i] = mean(parameter[series], na.rm = TRUE)
     }
@@ -95,9 +97,13 @@ lm.shelf <-lm(mz.spring$Shelf_ave~mz.spring$Date_Time)
 summary(lm.shelf)
 lm.slope <-lm(mz.spring$Slope_ave~mz.spring$Date_Time)
 summary(lm.slope)
+lm.fall.shelf <-lm(mz.fall$Shelf_ave~mz.fall$Date_Time)
+summary(lm.fall.shelf)
+lm.fall.slope <-lm(mz.fall$Slope_ave~mz.fall$Date_Time)
+summary(lm.fall.slope)
 
 #make plots
-plot(mz.spring$Date_Time, mz.spring$Shelf_ave, col="green", ylim=c(0,5), xlab="Date", ylab="mean log10 Microzoop Biomass", main="NGA-LTER GAK Line Microzoops")
+plot(mz.spring$Date_Time, mz.spring$Shelf_ave, col="green", ylim=c(0,5), xlab="Date", ylab="mean log10 Microzoop Biomass", main="NGA-LTER GAK Line Spring")
 points(mz.spring$Date_Time, mz.spring$Slope_ave, col="blue")
 lines(mz.spring$Date_Time, mz.spring$Shelf_5yr_mean, col="green")
 lines(mz.spring$Date_Time, mz.spring$Slope_5yr_mean, col="blue")
@@ -105,9 +111,18 @@ legend("topright", c("shelf", "slope"), col=c("green","blue"), lty=1, pch=1)
 mtext(side=1,line=-1, adj=0, text= paste( "Shelf SD =",round(sd(mz.spring$Shelf_5yr_mean, na.rm=T), digits=2)))
 mtext(side=1,line=-1, text= paste( "Slope SD =",round(sd(mz.spring$Slope_5yr_mean, na.rm=T), digits=2)))
 
+plot(mz.fall$Date_Time, mz.fall$Shelf_ave, col="green", ylim=c(0,5), xlab="Date", ylab="mean log10 Microzoop Biomass", main="NGA-LTER GAK Line Fall")
+points(mz.fall$Date_Time, mz.fall$Slope_ave, col="blue")
+lines(mz.fall$Date_Time, mz.fall$Shelf_5yr_mean, col="green")
+lines(mz.fall$Date_Time, mz.fall$Slope_5yr_mean, col="blue")
+legend("topright", c("shelf", "slope"), col=c("green","blue"), lty=1, pch=1)
+mtext(side=1,line=-1, adj=0, text= paste( "Shelf SD =",round(sd(mz.fall$Shelf_5yr_mean, na.rm=T), digits=2)))
+mtext(side=1,line=-1, text= paste( "Slope SD =",round(sd(mz.fall$Slope_5yr_mean, na.rm=T), digits=2)))
+
 #rename columns for clarity
 colnames(mz.area) <- c("Cruise", "Date_Time","logBiomass_shelf","logBiomass_slope")
 
 #write csv file out
 write.csv(mz.area, file= file.path(path,"NGA_Microzoo_arealmean.csv"))
-
+write.csv(mz.spring, file=file.path(path,"NGA_Microzoo_Spring.csv"))
+write.csv(mz.fall, file=file.path(path,"NGA_Microzoo_Fall.csv"))
