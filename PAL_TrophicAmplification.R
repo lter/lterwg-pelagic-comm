@@ -3,13 +3,44 @@
 # PAL 2x2 m zoop biovolume time series
 # PAL surface chl time series
 
-library(tidyverse)
+## ------------------------------------------ ##
+#            Housekeeping -----
+## ------------------------------------------ ##
 
-setwd("/Users/jackconroy/Documents/LTER cross site")
+# Load necessary libraries
+# If you don't have the "librarian" package, uncomment the next line and run it to install the package
+# install.packages("librarian")
+librarian::shelf(tidyverse, googledrive, zoo)
+
+# Set site
+site <- "PAL"
+
+# Create necessary sub-folder(s)
+dir.create(path = file.path("raw_data"), showWarnings = F)
+dir.create(path = file.path("raw_data", site), showWarnings = F)
+
+# Identify raw data files
+# For example, here I'm pulling all the PAL csv files from Google Drive
+# A new window will pop up asking you to select the appropriate Google Drive account
+# For more help, see: https://nceas.github.io/scicomp.github.io/tutorials.html#using-the-googledrive-r-package
+raw_PAL_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/1/folders/14k1iUJv7a7ZXj34Y35Iy9pEKJnO53ONH"),
+                                     type = "csv") 
+
+# For each raw data file, download it into its own site folder
+for(k in 1:nrow(raw_PAL_ids)){
+  
+  # Download file (but silence how chatty this function is)
+  googledrive::with_drive_quiet(
+    googledrive::drive_download(file = raw_PAL_ids[k, ]$id, overwrite = T,
+                                path = file.path("raw_data", site, raw_PAL_ids[k, ]$name)) )
+  
+  # Print success message
+  message("Downloaded file ", k, " of ", nrow(raw_PAL_ids))
+}
 
 # total zoop biovolume
 
-zoopBV <- read.csv("PAL_2m_BV.csv")
+zoopBV <- read.csv(file.path("raw_data", site, "PAL_2m_BV.csv"))
 
 keepCols <- colnames(zoopBV)[c(1, 5, 7, 62:65)]
 taxaCols <- colnames(zoopBV)[c(62:65)]
@@ -42,8 +73,6 @@ annualTotalBV <- aggregate(adjTotalBV ~ Year, totalClean, mean)
 
 plot(adjTotalBV ~ Year, data = annualTotalBV, type = "b",
      main = "Total zooplankton biovolume - full grid")
-
-library(zoo)
 
 zoop.run.mean <- rollmean(annualTotalBV$adjTotalBV, k = 5)
 
@@ -102,7 +131,7 @@ sd(fish.run.mean)
 
 # chlorophyll a
 
-chl <- read.csv("chl_log10_gridavg.csv")
+chl <- read.csv(file.path("raw_data", site, "chl_log10_gridavg.csv"))
 
 plot(Chlorophyll_log10_mean ~ Year, data = chl, type = "b",
      main = "Surface chlorophyll a - full grid")
