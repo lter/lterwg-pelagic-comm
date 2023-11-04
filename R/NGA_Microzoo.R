@@ -5,12 +5,13 @@
 
 # Load libraries
 librarian::shelf(tidyverse, googledrive)
+source('R/functions.R')
 
 # define file path
 path <- "~/Desktop/NGA-LTER/proc_data"
 
 #identify all csv files on the google drive
-raw_NGA_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/0/folders/14lYLzawcQUy0ruAG6norhJ4VcocfPk8M"), type = "csv") 
+raw_NGA_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/0/folders/14lYLzawcQUy0ruAG6norhJ4VcocfPk8M"), type = "csv")
 #identify the ID of the files I want
 mz_NGA_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/0/folders/14lYLzawcQUy0ruAG6norhJ4VcocfPk8M")) %>%
   dplyr::filter(name %in% c("NGA_signature_microzoop_summary_abundance_carbon_biomass_2011_2022.csv","NGA_signature_microzoop_abundance_2011_2022.csv"))
@@ -26,7 +27,7 @@ mz.raw <- read.csv( file = file.path(path,mz_NGA_ids[1, ]$name))
 
 #Date/time not in a standard format so need to tell R how to read it
 mz.raw$Date_Time_.UTC. <- gsub("Z","",mz.raw$Date_Time_.UTC.)
-mz.raw$Date_Time_.UTC. <- strptime(mz.raw$Date_Time_.UTC.,format = "%Y-%m-%dT%H:%M:%S", tz="GMT") 
+mz.raw$Date_Time_.UTC. <- strptime(mz.raw$Date_Time_.UTC.,format = "%Y-%m-%dT%H:%M:%S", tz="GMT")
 
 #remove rows with NA for a timestamp and for bottle flags
 mz <- mz.raw[!is.na(mz.raw$Date_Time_.UTC.),]

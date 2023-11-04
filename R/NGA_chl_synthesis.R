@@ -9,14 +9,14 @@
 # If you don't have the "librarian" package, uncomment the next line and run it to install the package
 install.packages("librarian")
 librarian::shelf(tidyverse, googledrive)
-
+source('R/functions.R')
 
 # define file path
 path <- "~/Desktop/NGA-LTER/proc_data"
 
 #read in chlorophyll time series
 #identify all csv files on the google drive
-#raw_NGA_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/0/folders/14lYLzawcQUy0ruAG6norhJ4VcocfPk8M"), type = "csv") 
+#raw_NGA_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/0/folders/14lYLzawcQUy0ruAG6norhJ4VcocfPk8M"), type = "csv")
 #identify the ID of the one file I want
 raw_NGA_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/0/folders/14lYLzawcQUy0ruAG6norhJ4VcocfPk8M")) %>%
   dplyr::filter(name %in% c("Seward Line chl timeseries dataset 1997-2022.csv"))
