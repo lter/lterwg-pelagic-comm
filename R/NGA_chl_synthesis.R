@@ -9,7 +9,7 @@
 # If you don't have the "librarian" package, uncomment the next line and run it to install the package
 install.packages("librarian")
 librarian::shelf(tidyverse, googledrive)
-
+source('R/functions.R')
 
 # define file path
 path <- "~/Desktop/NGA-LTER/proc_data"
