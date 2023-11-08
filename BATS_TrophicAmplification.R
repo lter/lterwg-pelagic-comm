@@ -238,7 +238,7 @@ plot(adjChl ~ Date, data = chl, type = "b",
      ylim = c(1, 3), xlim = c(chl$Date[1], zoopDW$Date[length(zoopDW$Date)]))
 par(new = T)
 # manually coding the dates for the rolling mean b/c uncertain about above alignment
-plot(run.mean.chl ~ chl$Date[6:266], type = "l",
+plot(run.mean.chl ~ chl$Date[6:391], type = "l",
      col = "red", lwd = 3,
      ylim = c(1, 3), xlim = c(chl$Date[1], zoopDW$Date[length(zoopDW$Date)]),
      ylab = "", xlab = "")
