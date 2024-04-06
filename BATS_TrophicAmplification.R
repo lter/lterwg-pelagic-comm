@@ -57,8 +57,10 @@ plot(adjTotalDW ~ Date, data = zoopDW, type = "b",
 # Can't use rollmean b/c there are NAs
 run.mean.total <- rollapply(zoopDW$adjTotalDW, 12, function(x) mean(x, na.rm = T))
 
+sd(run.mean.total)
+
 plot(adjTotalDW ~ Date, data = zoopDW, type = "b",
-     main = "Total zooplankton dry weight - BATS",
+     main = "Total zooplankton dry weight - BATS, std. dev. = 0.095", ylab = "logZoopTotal",
      ylim = c(-0.2, 1), xlim = c(zoopDW$Date[1], zoopDW$Date[length(zoopDW$Date)]))
 par(new = T)
 # manually coding the dates for the rolling mean b/c uncertain about above alignment
@@ -66,8 +68,6 @@ plot(run.mean.total ~ zoopDW$Date[6:345], type = "l",
      col = "red", lwd = 3,
      ylim = c(-0.2, 1), xlim = c(zoopDW$Date[1], zoopDW$Date[length(zoopDW$Date)]),
      ylab = "", xlab = "")
-
-sd(run.mean.total)
 
 
 # 0.2-0.5 mm zoop dry weight
@@ -85,8 +85,10 @@ plot(adj200DW ~ Date, data = zoopDW, type = "b",
 # Can't use rollmean b/c there are NAs
 run.mean.200 <- rollapply(zoopDW$adj200DW, 12, function(x) mean(x, na.rm = T))
 
+sd(run.mean.200)
+
 plot(adj200DW ~ Date, data = zoopDW, type = "b",
-     main = "0.2-0.5 mm zooplankton dry weight - BATS",
+     main = "0.2-0.5 mm zooplankton dry weight - BATS, std. dev. = 0.116", ylab = "logZoop0.2mm",
      ylim = c(-1, 0.5), xlim = c(zoopDW$Date[1], zoopDW$Date[length(zoopDW$Date)]))
 par(new = T)
 # manually coding the dates for the rolling mean b/c uncertain about above alignment
@@ -94,8 +96,6 @@ plot(run.mean.200 ~ zoopDW$Date[6:345], type = "l",
      col = "red", lwd = 3,
      ylim = c(-1, 0.5), xlim = c(zoopDW$Date[1], zoopDW$Date[length(zoopDW$Date)]),
      ylab = "", xlab = "")
-
-sd(run.mean.200)
 
 
 # 0.5-1 mm zoop dry weight
@@ -113,8 +113,10 @@ plot(adj500DW ~ Date, data = zoopDW, type = "b",
 # Can't use rollmean b/c there are NAs
 run.mean.500 <- rollapply(zoopDW$adj500DW, 12, function(x) mean(x, na.rm = T))
 
+sd(run.mean.500)
+
 plot(adj500DW ~ Date, data = zoopDW, type = "b",
-     main = "0.5-1 mm zooplankton dry weight - BATS",
+     main = "0.5-1 mm zooplankton dry weight - BATS, std. dev. = 0.119", ylab = "logZoop0.5mm",
      ylim = c(-1, 0.5), xlim = c(zoopDW$Date[1], zoopDW$Date[length(zoopDW$Date)]))
 par(new = T)
 # manually coding the dates for the rolling mean b/c uncertain about above alignment
@@ -122,8 +124,6 @@ plot(run.mean.500 ~ zoopDW$Date[6:345], type = "l",
      col = "red", lwd = 3,
      ylim = c(-1, 0.5), xlim = c(zoopDW$Date[1], zoopDW$Date[length(zoopDW$Date)]),
      ylab = "", xlab = "")
-
-sd(run.mean.500)
 
 
 # 1-2 mm zoop dry weight
@@ -141,8 +141,10 @@ plot(adj1000DW ~ Date, data = zoopDW, type = "b",
 # Can't use rollmean b/c there are NAs
 run.mean.1000 <- rollapply(zoopDW$adj1000DW, 12, function(x) mean(x, na.rm = T))
 
+sd(run.mean.1000)
+
 plot(adj1000DW ~ Date, data = zoopDW, type = "b",
-     main = "1-2 mm zooplankton dry weight - BATS",
+     main = "1-2 mm zooplankton dry weight - BATS, std. dev. = 0.108", ylab = "logZoop1mm",
      ylim = c(-1, 0.5), xlim = c(zoopDW$Date[1], zoopDW$Date[length(zoopDW$Date)]))
 par(new = T)
 # manually coding the dates for the rolling mean b/c uncertain about above alignment
@@ -150,8 +152,6 @@ plot(run.mean.1000 ~ zoopDW$Date[6:345], type = "l",
      col = "red", lwd = 3,
      ylim = c(-1, 0.5), xlim = c(zoopDW$Date[1], zoopDW$Date[length(zoopDW$Date)]),
      ylab = "", xlab = "")
-
-sd(run.mean.1000)
 
 
 # 2-5 mm zoop dry weight
@@ -169,8 +169,10 @@ plot(adj2000DW ~ Date, data = zoopDW, type = "b",
 # Can't use rollmean b/c there are NAs
 run.mean.2000 <- rollapply(zoopDW$adj2000DW, 12, function(x) mean(x, na.rm = T))
 
+sd(run.mean.2000)
+
 plot(adj2000DW ~ Date, data = zoopDW, type = "b",
-     main = "2-5 mm zooplankton dry weight - BATS",
+     main = "2-5 mm zooplankton dry weight - BATS, std. dev. = 0.137", ylab = "logZoop2mm",
      ylim = c(-1.5, 0.5), xlim = c(zoopDW$Date[1], zoopDW$Date[length(zoopDW$Date)]))
 par(new = T)
 # manually coding the dates for the rolling mean b/c uncertain about above alignment
@@ -178,8 +180,6 @@ plot(run.mean.2000 ~ zoopDW$Date[6:345], type = "l",
      col = "red", lwd = 3,
      ylim = c(-1.5, 0.5), xlim = c(zoopDW$Date[1], zoopDW$Date[length(zoopDW$Date)]),
      ylab = "", xlab = "")
-
-sd(run.mean.2000)
 
 
 # >5 mm zoop dry weight
@@ -197,8 +197,10 @@ plot(adj5000DW ~ Date, data = zoopDW, type = "b",
 # Can't use rollmean b/c there are NAs
 run.mean.5000 <- rollapply(zoopDW$adj5000DW, 12, function(x) mean(x, na.rm = T))
 
+sd(run.mean.5000)
+
 plot(adj5000DW ~ Date, data = zoopDW, type = "b",
-     main = ">5 mm zooplankton dry weight - BATS",
+     main = ">5 mm zooplankton dry weight - BATS, std. dev. = 0.141", ylab = "logZoop5mm",
      ylim = c(-2, 1), xlim = c(zoopDW$Date[1], zoopDW$Date[length(zoopDW$Date)]))
 par(new = T)
 # manually coding the dates for the rolling mean b/c uncertain about above alignment
@@ -206,8 +208,6 @@ plot(run.mean.5000 ~ zoopDW$Date[6:345], type = "l",
      col = "red", lwd = 3,
      ylim = c(-2, 1), xlim = c(zoopDW$Date[1], zoopDW$Date[length(zoopDW$Date)]),
      ylab = "", xlab = "")
-
-sd(run.mean.5000)
 
 
 # Surface chlorophyll a
@@ -233,8 +233,10 @@ plot(adjChl ~ Date, data = chl, type = "b",
 # Can't use rollmean b/c there are NAs
 run.mean.chl <- rollapply(chl$adjChl, 12, function(x) mean(x, na.rm = T))
 
+sd(run.mean.chl)
+
 plot(adjChl ~ Date, data = chl, type = "b",
-     main = "Chlorophyll a - BATS",
+     main = "Chlorophyll a - BATS, std. dev. = 0.112", ylab = "logChl",
      ylim = c(1, 3), xlim = c(chl$Date[1], zoopDW$Date[length(zoopDW$Date)]))
 par(new = T)
 # manually coding the dates for the rolling mean b/c uncertain about above alignment
@@ -242,5 +244,3 @@ plot(run.mean.chl ~ chl$Date[6:391], type = "l",
      col = "red", lwd = 3,
      ylim = c(1, 3), xlim = c(chl$Date[1], zoopDW$Date[length(zoopDW$Date)]),
      ylab = "", xlab = "")
-
-sd(run.mean.chl)
