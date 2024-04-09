@@ -1,7 +1,5 @@
 ## ------------------------------------------ ##
-#        
-# Pelagic Community Structure -- Data Cleaning (Staged)
-# 
+#  Pelagic Community Structure -- Data Cleaning (Staged)
 ## ------------------------------------------ ##
 # Script author(s): Angel Chen
 
