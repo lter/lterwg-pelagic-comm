@@ -1,17 +1,18 @@
 # NGA_Microzoo.R
-# author: Gwenn Hennon
+# author: Gwenn Hennon, Bia Dias
 # email: gmhennon@alaska.edu
 # Purpose: pull down NGA Microzooplankton biomass data from Google Drive, clean up the data and calculate summary stats for further analysis
 
 # Load libraries
-librarian::shelf(tidyverse, googledrive)
+librarian::shelf(tidyverse, googledrive, janitor, here)
 source('R/functions.R')
 
-# define file path
-path <- "~/Desktop/NGA-LTER/proc_data"
+# define file path (change for your own purpose)
+path <- "~//LTER_WG_pelagic"
 
 #identify all csv files on the google drive
 raw_NGA_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/1/folders/10KgTVkAMODzgvfaf6c-XI-eelV_PtUSk"), type = "csv") 
+
 #identify the ID of the files I want
 mz_NGA_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/1/folders/10KgTVkAMODzgvfaf6c-XI-eelV_PtUSk")) %>%
   dplyr::filter(name %in% c("NGA_signature_microzoop_summary_abundance_carbon_biomass_2011_2022.csv","NGA_signature_microzoop_abundance_2011_2022.csv"))
@@ -23,48 +24,50 @@ for(i in 1:nrow(mz_NGA_ids)){
 }
 
 # read csv file on local computer
-mz.raw <- read.csv( file = file.path(path,mz_NGA_ids[1, ]$name))
+# We have decided to use carbon biomass for the size spectra analysis
+mz.raw <- read.csv( file = file.path(path,mz_NGA_ids[2, ]$name)) %>% 
+  clean_names()
 
 #Date/time not in a standard format so need to tell R how to read it
-mz.raw$Date_Time_.UTC. <- gsub("Z","",mz.raw$Date_Time_.UTC.)
-mz.raw$Date_Time_.UTC. <- strptime(mz.raw$Date_Time_.UTC.,format = "%Y-%m-%dT%H:%M:%S", tz="GMT")
+mz.raw$date_time_utc <- gsub("Z","",mz.raw$date_time_utc)
+mz.raw$date_time_utc <- strptime(mz.raw$date_time_utc,format = "%Y-%m-%dT%H:%M:%S", tz="GMT")
 
 #remove rows with NA for a timestamp and for bottle flags
-mz <- mz.raw[!is.na(mz.raw$Date_Time_.UTC.),]
-mz <- mz[!is.na(mz$Bottle_Number_Flag),]
+mz <- mz.raw[!is.na(mz.raw$date_time_utc),]
+mz <- mz[!is.na(mz$bottle_number_flag),]
 
 #check out data to see if it should be log transformed
-hist(mz$Total_MZ_Carbon_Biomass_.ug.L.)
-hist(log(mz$Total_MZ_Carbon_Biomass_.ug.L.))
+hist(mz$total_mz_carbon_biomass_ug_l)
+hist(log(mz$total_mz_carbon_biomass_ug_l))
 
 #log transform total Microzoo biomass
-mz$Log_Tot_MZ_Biomass <- log(mz$Total_MZ_Carbon_Biomass_.ug.L.)
+mz$log_tot_mz_biomass <- log(mz$total_mz_carbon_biomass_ug_l)
 
 # Compute areal means for each cruise by: shelf and slope stations
 #average by shelf v. slope
-cruises <- unique(mz$Cruise)
+cruises <- unique(mz$cruise)
 shelf.stations <- c("GAK1", "GAK2", "GAK3", "GAK4", "GAK5","GAK6","GAK7", "GAK8","GAK9")
 slope.stations <- c("GAK10","GAK11","GAK12","GAK13","GAK14","GAK15")
 mz.area <- as.data.frame(matrix(NA, nrow=length(cruises), ncol=4))
-colnames(mz.area) <- c("Cruise", "Date_Time", "Shelf_ave","Slope_ave")
-mz.area$Date_Time <- Sys.time()
+colnames(mz.area) <- c("cruise", "date_time", "shelf_mean","slope_mean")
+mz.area$date_time <- Sys.time()
 index = 1
 for(c in cruises){
-  sub <- subset(mz, mz$Cruise == c)
-  sub.shelf <- sub[which(sub$Station %in% shelf.stations),]
-  sub.slope <- sub[which(sub$Station %in% slope.stations),]
-  mz.area$Cruise[index] <-c
-  mz.area$Date_Time[index] <- mean(sub$Date_Time_.UTC., na.rm=T)
-  mz.area$Shelf_ave[index] <- mean(sub.shelf$Log_Tot_MZ_Biomass, na.rm=T)
-  mz.area$Slope_ave[index] <- mean(sub.slope$Log_Tot_MZ_Biomass, na.rm=T)
+  sub <- subset(mz, mz$cruise == c)
+  sub.shelf <- sub[which(sub$station %in% shelf.stations),]
+  sub.slope <- sub[which(sub$station %in% slope.stations),]
+  mz.area$cruise[index] <-c
+  mz.area$date_time[index] <- mean(sub$date_time_utc, na.rm=T)
+  mz.area$shelf_mean[index] <- mean(sub.shelf$log_tot_mz_biomass, na.rm=T)
+  mz.area$slope_mean[index] <- mean(sub.slope$log_tot_mz_biomass, na.rm=T)
   index= index+1
 }
 
 #get the month to split into seasons to remove inter-annual signals
-Month <-as.numeric(format(mz.area$Date_Time, format="%m"))
+month <-as.numeric(format(mz.area$date_time, format="%m"))
 #subset by fall and spring
-mz.fall <- mz.area[which(Month > 7),]
-mz.spring <- mz.area[which(Month < 6),]
+mz.fall <- mz.area[which(month > 7),]
+mz.spring <- mz.area[which(month < 6),]
 
 #function for calculating a smooth of parameter with k= window size between 5 and big number (credit Tom Kelly)
 sma = function(parameter, k = 100) {
@@ -88,37 +91,87 @@ sma = function(parameter, k = 100) {
 }
 
 #perform five year smooth
-mz.spring$Shelf_5yr_mean <- sma(mz.spring$Shelf_ave, k=5)
-mz.spring$Slope_5yr_mean <- sma(mz.spring$Slope_ave, k=5)
-mz.fall$Shelf_5yr_mean <- sma(mz.fall$Shelf_ave, k=5)
-mz.fall$Slope_5yr_mean <- sma(mz.fall$Slope_ave, k=5)
+mz.spring$shelf_5yr_mean <- sma(mz.spring$shelf_mean, k=5)
+mz.spring$slope_5yr_mean <- sma(mz.spring$slope_mean, k=5)
+mz.fall$shelf_5yr_mean <- sma(mz.fall$shelf_mean, k=5)
+mz.fall$slope_5yr_mean <- sma(mz.fall$slope_mean, k=5)
 
 #test to look for linear correlations
-lm.shelf <-lm(mz.spring$Shelf_ave~mz.spring$Date_Time)
+lm.shelf <-lm(mz.spring$shelf_mean~mz.spring$date_time)
 summary(lm.shelf)
-lm.slope <-lm(mz.spring$Slope_ave~mz.spring$Date_Time)
+lm.slope <-lm(mz.spring$slope_mean~mz.spring$date_time)
 summary(lm.slope)
-lm.fall.shelf <-lm(mz.fall$Shelf_ave~mz.fall$Date_Time)
+lm.fall.shelf <-lm(mz.fall$shelf_mean~mz.fall$date_time)
 summary(lm.fall.shelf)
-lm.fall.slope <-lm(mz.fall$Slope_ave~mz.fall$Date_Time)
+lm.fall.slope <-lm(mz.fall$slope_mean~mz.fall$date_time)
 summary(lm.fall.slope)
 
 #make plots
-plot(mz.spring$Date_Time, mz.spring$Shelf_ave, col="green", ylim=c(0,5), xlab="Date", ylab="mean log10 Microzoop Biomass", main="NGA-LTER GAK Line Spring")
-points(mz.spring$Date_Time, mz.spring$Slope_ave, col="blue")
-lines(mz.spring$Date_Time, mz.spring$Shelf_5yr_mean, col="green")
-lines(mz.spring$Date_Time, mz.spring$Slope_5yr_mean, col="blue")
-legend("topright", c("shelf", "slope"), col=c("green","blue"), lty=1, pch=1)
-mtext(side=1,line=-1, adj=0, text= paste( "Shelf SD =",round(sd(mz.spring$Shelf_5yr_mean, na.rm=T), digits=2)))
-mtext(side=1,line=-1, text= paste( "Slope SD =",round(sd(mz.spring$Slope_5yr_mean, na.rm=T), digits=2)))
+plot(
+  mz.spring$date_time,
+  mz.spring$shelf_mean,
+  col = "#FFC20A",
+  ylim = c(0, 5),
+  xlab = "Date",
+  ylab = "mean log10 Microzoop Biomass",
+  main = "NGA-LTER GAK Line Spring"
+)
+points(mz.spring$date_time, mz.spring$slope_mean, col = "#0C7BDC")
+lines(mz.spring$date_time, mz.spring$shelf_5yr_mean, col = "#FFC20A")
+lines(mz.spring$date_time, mz.spring$slope_5yr_mean, col = "#0C7BDC")
+legend(
+  "topright",
+  c("shelf", "slope"),
+  col = c("#FFC20A", "#0C7BDC"),
+  lty = 1,
+  pch = 1
+)
+mtext(
+  side = 1,
+  line = -1,
+  adj = 0,
+  text = paste("Shelf SD =", round(
+    sd(mz.spring$shelf_5yr_mean, na.rm = T), digits = 2
+  ))
+)
+mtext(side = 1,
+      line = -1,
+      text = paste("Slope SD =", round(
+        sd(mz.spring$slope_5yr_mean, na.rm = T), digits = 2
+      )))
 
-plot(mz.fall$Date_Time, mz.fall$Shelf_ave, col="green", ylim=c(0,5), xlab="Date", ylab="mean log10 Microzoop Biomass", main="NGA-LTER GAK Line Fall")
-points(mz.fall$Date_Time, mz.fall$Slope_ave, col="blue")
-lines(mz.fall$Date_Time, mz.fall$Shelf_5yr_mean, col="green")
-lines(mz.fall$Date_Time, mz.fall$Slope_5yr_mean, col="blue")
-legend("topright", c("shelf", "slope"), col=c("green","blue"), lty=1, pch=1)
-mtext(side=1,line=-1, adj=0, text= paste( "Shelf SD =",round(sd(mz.fall$Shelf_5yr_mean, na.rm=T), digits=2)))
-mtext(side=1,line=-1, text= paste( "Slope SD =",round(sd(mz.fall$Slope_5yr_mean, na.rm=T), digits=2)))
+plot(
+  mz.fall$date_time,
+  mz.fall$shelf_mean,
+  col = "#FFC20A",
+  ylim = c(0, 5),
+  xlab = "Date",
+  ylab = "mean log10 Microzoop Biomass",
+  main = "NGA-LTER GAK Line Fall"
+)
+points(mz.fall$date_time, mz.fall$slope_mean, col = "#0C7BDC")
+lines(mz.fall$date_time, mz.fall$shelf_5yr_mean, col = "#FFC20A")
+lines(mz.fall$date_time, mz.fall$slope_5yr_mean, col = "#0C7BDC")
+legend(
+  "topright",
+  c("shelf", "slope"),
+  col = c("#FFC20A", "#0C7BDC"),
+  lty = 1,
+  pch = 1
+)
+mtext(
+  side = 1,
+  line = -1,
+  adj = 0,
+  text = paste("Shelf SD =", round(
+    sd(mz.fall$shelf_5yr_mean, na.rm = T), digits = 2
+  ))
+)
+mtext(side = 1,
+      line = -1,
+      text = paste("Slope SD =", round(
+        sd(mz.fall$slope_5yr_mean, na.rm = T), digits = 2
+      )))
 
 #rename columns for clarity
 colnames(mz.area) <- c("Cruise", "Date_Time","logBiomass_shelf","logBiomass_slope")
@@ -127,3 +180,7 @@ colnames(mz.area) <- c("Cruise", "Date_Time","logBiomass_shelf","logBiomass_slop
 write.csv(mz.area, file= file.path(path,"NGA_Microzoo_arealmean.csv"))
 write.csv(mz.spring, file=file.path(path,"NGA_Microzoo_Spring.csv"))
 write.csv(mz.fall, file=file.path(path,"NGA_Microzoo_Fall.csv"))
+
+
+
+
