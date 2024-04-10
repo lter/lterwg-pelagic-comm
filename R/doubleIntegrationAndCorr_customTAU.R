@@ -20,6 +20,9 @@ library(magrittr) #map_dfr
 ################################################################################
 ## Data
 abu <- read.csv("raw/EcoMon_v3_8_wDateStrata.csv")
+
+taxa_of_interest <- c("name1", "name2", "name3")
+
 ################################################################################
 # add season to df
 abu <- abu %>%
@@ -36,7 +39,10 @@ abu <- abu %>%
                             TRUE ~ "Outside"))
 ################################################################################
 #select cols of interest - change if wanna do more/different taxa
+
 abu1 <- abu[ , c(11:14,23:25, 75, 79, 208, 235, 298:299)] #this selects ctypicus and cfinmarchicus
+abu1 <- abu %>%
+  select(year, month, taxa_of_interest)
 #throwing in pseudocalanus, megan, euphkr, clupea harengus, ammodytes
 
 # Looking just at 10m2 for now, but can change by selecting
@@ -135,10 +141,10 @@ for (taxa in unique(abu_long$taxa)) {
         left_join(abu_longTran %>% select(season, year, date), by = c("season", "year"))
       
       # Convert date column to POSIXct
-      zscore2$date <- fastPOSIXct(zscore2$date) #this attaches time to date
-      zscore2$date <- as.Date(zscore2$date)
+      #zscore2$date <- fastPOSIXct(zscore2$date) #this attaches time to date
       
       zscore <- zscore2 %>%
+        mutate(date = as.Date(fastPOSIXct(date))) %>%
         distinct(season,taxa,Region,year, .keep_all = T)
       
       # Store zscore in the list
@@ -254,6 +260,15 @@ nao_month_long <- nao_month_long[, c("time", "nao", "yr", "month")]
 nao_month_long1 <- nao_month_long[, c(1:2)]
 nao_month_long1$time <- as.POSIXct(nao_month_long1$time, format = "%Y-%m-%d")
 nao_month_long1 <- nao_month_long1[-611 ,]
+
+nao_month_long <- read.csv(file.path("raw", "norm.nao.monthly.b5001.current.ascii.LONG.csv")) %>%
+  mutate(time = as.Date(paste(yr, month, "15", sep = "-"))) %>%
+  filter(yr > 1972) %>%
+  select(time, nao, yr, month) %>%
+  select(1,2) %>%
+  mutate(time = as.POSIXct(time, format = "%Y-%m-%d")) %>%
+  filter(time =! as.POSIXct("2023-11-15"))
+
 
 #naoInt <- calculateIntegrations(nao_month_long1)
 #naoInt$time <- as.Date(naoInt$time)
