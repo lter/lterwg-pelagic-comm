@@ -62,6 +62,8 @@ for (j in 1:length(raw_files)){
   indices <- which(tidy_v0$CRUCOD=="\"NON-MAJOR COPEPODA TAXA\"")
   more_indices <- which(tidy_v0$CRUCOD=="4019")
   
+  volsml_indices <- which(tidy_v0$CRUCOD=="(Cruise Code)")
+  
   # Create empty list to store our tidied sections for later
   unstaged_list <- list()
   
@@ -98,10 +100,17 @@ for (j in 1:length(raw_files)){
       dplyr::select(PLKTAX_NUM, PLKTAX_NAM, ZOOSTG_Vial_No, ZOOCNT) %>%
       dplyr::filter(!is.na(PLKTAX_NUM))
     
-    # Combine the station, non-major copepoda, and other taxa data together
+    # Grab the volsml data for one section
+    volsml <- tidy_v0 %>% 
+      dplyr::slice(volsml_indices[i]:(volsml_indices[i]+1)) %>%
+      dplyr::slice(-1) %>%
+      dplyr::select(VOLSML, ALQFCTR, TOTCNT)
+    
+    # Combine the station, volsml, non-major copepoda, and other taxa data together
     tidy_v2 <- bind_rows(non_major, other_taxa) %>%
       dplyr::bind_cols(station) %>%
-      dplyr::relocate(CRUNAM:GERCOD, .before = PLKTAX_NUM)
+      dplyr::bind_cols(volsml) %>%
+      dplyr::relocate(CRUNAM:TOTCNT, .before = PLKTAX_NUM)
     
     # Save our combined result into our list
     unstaged_list[[i]] <- tidy_v2
