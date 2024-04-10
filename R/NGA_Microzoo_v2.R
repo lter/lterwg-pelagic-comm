@@ -13,8 +13,20 @@ path <- "C:/Users/Bia/Dropbox/A_GWA/LTER_WG_pelagic/lterwg-pelagic-comm/raw_data
 raw_NGA_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/1/folders/10KgTVkAMODzgvfaf6c-XI-eelV_PtUSk"), type = "csv") 
 
 #identify the ID of the files I want
-mz_NGA_ids <- googledrive::drive_ls(googledrive::as_id("https://drive.google.com/drive/u/1/folders/10KgTVkAMODzgvfaf6c-XI-eelV_PtUSk")) %>%
-  dplyr::filter(name %in% c("NGA_signature_microzoop_summary_abundance_carbon_biomass_2011_2022.csv","NGA_signature_microzoop_abundance_2011_2022.csv"))
+mz_NGA_ids <-
+  googledrive::drive_ls(
+    googledrive::as_id(
+      "https://drive.google.com/drive/u/2/folders/10KgTVkAMODzgvfaf6c-XI-eelV_PtUSk"
+    )
+  ) %>%
+  dplyr::filter(
+    name %in% c(
+      "NGA_signature_microzoop_summary_abundance_carbon_biomass_2011_2022.csv",
+      "NGA_signature_microzoop_abundance_2011_2022.csv",
+      "NGA_signature_microzoop_carbon_biomass_2011_2022.csv",
+      "NGA_signature_microzoop_carbon_biomass_2011_2022_v2.csv"
+    )
+  )
 
 #download Microzooplankton time series from google drive
 for(i in 1:nrow(mz_NGA_ids)){
@@ -24,12 +36,12 @@ for(i in 1:nrow(mz_NGA_ids)){
 
 # read csv file on local computer
 # We have decided to use carbon biomass for the size spectra analysis
-mz.raw <- read.csv( file = file.path(path,mz_NGA_ids[2, ]$name)) %>% 
+mz.raw <- read.csv( file = file.path(path,mz_NGA_ids[3, ]$name)) %>% 
   clean_names()
 
 #-------------------------------------------------------------
 #-------------------------------------------------------------
-#Susanne data for 20 under size bins. 
+#Suzanne data for 20 under size bins_epifluorescence microscopy data. 
 Micro20under_ids <-
   googledrive::drive_ls(
     googledrive::as_id(
@@ -51,13 +63,12 @@ for(i in 1:nrow(Micro20under_ids)) {
 # Use setwd() if your directory 
 
 mz_under20 <-
-  dir(path = ,
-             recursive = TRUE,
-             pattern = "less_") %>%
-  map_dfr(read_csv) %>%
-  bind_rows() %>% 
+  dir(path = "raw_data",
+      full.names=T,
+      pattern = "less_") %>%
+  map_dfr(read_csv) %>% 
   clean_names()
 
 #All files merged
-write.csv(mz_under20, "mz_under20.csv", row.names=FALSE)
+write.csv(mz_under20, "raw_data/nga_mz_under20.csv", row.names=FALSE)
 
