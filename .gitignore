@@ -4,9 +4,5 @@
 .Ruserdata
 *.Rproj
 
-# Ignore .DS_Store (Mac file not relevant to work)
-.DS_Store
-
-# Ignore folders
 /raw_data
 /tidy
