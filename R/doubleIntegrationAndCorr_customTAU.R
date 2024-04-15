@@ -2,23 +2,45 @@
 #############          Pelagic Synthesis           #############################
 #############             MAR-2024                 #############################
 #############          Double Integration          #############################
-## Alexandra Cabanelas #########################################################
+## by: Alexandra Cabanelas #####################################################
 ################################################################################
-# Double INT custom TAU
+# Double Integration - setting custom TAU for different taxa
+
 ## Packages
 library(tidyverse)
 library(fasttime) #because regular posixt function takes too long in loop
 library(gridExtra) 
 library(cowplot)
+
 #install.packages("devtools")
 #remotes::install_github("noaa-edab/ecodata",build_vignettes=TRUE) 
 #or pak::pkg_install("noaa-edab/ecodata")
 library(ecodata) #coldpool and 
 #https://github.com/NOAA-EDAB/ecodata
-library(listviewer)
+
+library(listviewer) #for looking at lists interactively 
 library(magrittr) #map_dfr
+#install.packages("librarian") #to get files from googledrive
+#library(librarian) #not using this route at the moment
+#install.packages(c("googledrive", "httpuv"))
+library(googledrive) #for accessing data files in google drive folder
 ################################################################################
 ## Data
+
+#not sure if i need the dir.create lines..?
+#dir.create(path = file.path("raw_data"), showWarnings = F)
+#dir.create(path = file.path("raw_data", site), showWarnings = F)
+
+# A new window will pop up asking you to select the appropriate Google Drive account
+# For more help, see: https://nceas.github.io/scicomp.github.io/tutorials.html#using-the-googledrive-r-package
+# this goes to Data -> NES -> EcoMon google folder
+
+drive_folder <- googledrive::drive_ls(path = "https://drive.google.com/drive/u/0/folders/1-1EOdrrbJW6xYeaZFYeN8WLfZ5cZoEzV",
+                                      type = "csv", 
+                                      pattern = "EcoMon_v3_8_wDateStrata")
+
+abu <- googledrive::drive_download(file = drive_folder$id) #im stuck here.. how to assign this file to "abu"?
+
 abu <- read.csv("raw/EcoMon_v3_8_wDateStrata.csv")
 
 taxa_of_interest <- c("name1", "name2", "name3")
