@@ -39,7 +39,7 @@ vignettes/*.pdf
 .Renviron
 
 # Add .DS_Store
-# .DS_Store
+.DS_Store
 
 # Add R project file
 *.Rproj
