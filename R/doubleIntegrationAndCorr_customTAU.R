@@ -464,7 +464,7 @@ p_value_list
 # List to store the final plots for each group and driver
 final_plots_list <- list()
 
-output_dir <- "C:/Users/alexc/OneDrive/Documents/MITWHOI/1. RESEARCH/NES-LTER/03_Pelagic Synthesis WG/DoubleIntegration/figures/biodriverTS_dInt_manyTax"
+output_dir <- here("yourpath")
 
 # Iterate over each group in correlation_list
 for (group_name in names(correlation_list)) {
@@ -486,6 +486,7 @@ for (group_name in names(correlation_list)) {
   # Extract the correlation values for the current driver, taxa, and group combination
   #current_correlations <- correlations[[paste0(group_name, "_", driver_name, "_", taxa_name)]]
   current_correlations <- correlations[[paste0(group_name, "_", driver_name, "_", strsplit(group_name, "_")[[1]][1])]]
+  current_pvals <- pvalues[[paste0(group_name, "_", driver_name, "_", strsplit(group_name, "_")[[1]][1])]]
   
   # Extract the driver data
   driver_data_list <- switch(driver_name,
@@ -511,40 +512,64 @@ for (group_name in names(correlation_list)) {
               color = "red", size = 1.2) +
     geom_line(data = abundance_data, aes(x = date, y = Anomaly_yr), 
               color = "blue", size = 1.2) +
-    geom_text(aes(x = min(driver_data$time), y = 3,
-                  label = paste("Correlation:", round(current_correlations[1], 4))),
-              hjust = 0, vjust = 1, color = "black", size = 4.5) +
+    annotate("text", x = as.POSIXct("1975-01-01"), y = 3,
+             label = sprintf("rho == %.4f", current_correlations[1]),
+             parse = TRUE, hjust = 0, vjust = 1, color = "black", size = 5.5) +
+    geom_text(aes(x = as.POSIXct("1975-01-01"), y = 2.4,
+                  label = paste("P-value =", round(current_pvals[1], 4))),
+              hjust = 0, vjust = 1, color = "black", size = 5.5) +
     theme_bw() +
     theme(axis.title = element_blank(),
           axis.text.x = element_blank(),
           axis.text.y = element_text(size = 14, color = "black"),
-          axis.ticks.x = element_blank())
+          axis.ticks.x = element_blank()) +
+    scale_x_datetime(breaks = seq(as.POSIXct("1972-01-01"), 
+                                  as.POSIXct("2024-01-01"), 
+                                  by = "10 years"),
+                     date_labels = "%Y", expand = c(0, 0)) +
+    coord_cartesian(xlim = as.POSIXct(c("1972-01-01", "2024-01-01")))
   
   Int1Plot <- ggplot() +
     geom_line(data = driver_data, aes(x = time, y = .data[[paste0(driver_name, "Int")]]), 
               color = "red", size = 1.2) +
     geom_line(data = abundance_data, aes(x = date, y = Anomaly_yr), 
               color = "blue", size = 1.2) +
-    geom_text(aes(x = min(driver_data$time), y = 3,
-                  label = paste("Correlation:", round(current_correlations[2], 4))),
-              hjust = 0, vjust = 1, color = "black", size = 4.5) +
+    annotate("text", x = as.POSIXct("1975-01-01"), y = 3,
+             label = sprintf("rho == %.4f", current_correlations[2]),
+             parse = TRUE, hjust = 0, vjust = 1, color = "black", size = 5.5) +
+    geom_text(aes(x = as.POSIXct("1975-01-01"), y = 2.4,
+                  label = paste("P-value =", round(current_pvals[2], 4))),
+              hjust = 0, vjust = 1, color = "black", size = 5.5) +
     theme_bw() +
     theme(axis.title = element_blank(),
           axis.text.x = element_blank(),
           axis.text.y = element_text(size = 14, color = "black"),
-          axis.ticks.x = element_blank())
+          axis.ticks.x = element_blank()) +
+    scale_x_datetime(breaks = seq(as.POSIXct("1972-01-01"), 
+                                  as.POSIXct("2024-01-01"), 
+                                  by = "10 years"),
+                     date_labels = "%Y", expand = c(0, 0)) +
+    coord_cartesian(xlim = as.POSIXct(c("1972-01-01", "2024-01-01")))
   
   Int2Plot <- ggplot() +
     geom_line(data = driver_data, aes(x = time, y = .data[[paste0(driver_name, "DInt")]]),
               color = "red", size = 1.2) +
     geom_line(data = abundance_data, aes(x = date, y = Anomaly_yr), 
               color = "blue", size = 1.2) +
-    geom_text(aes(x = min(driver_data$time), y = 3,
-                  label = paste("Correlation:", round(current_correlations[3], 4))),
-              hjust = 0, vjust = 1, color = "black", size = 4.5) +
+    annotate("text", x = as.POSIXct("1975-01-01"), y = 3,
+             label = sprintf("rho == %.4f", current_correlations[3]),
+             parse = TRUE, hjust = 0, vjust = 1, color = "black", size = 5.5) +
+    geom_text(aes(x = as.POSIXct("1975-01-01"), y = 2.4,
+                  label = paste("P-value =", round(current_pvals[3], 4))),
+              hjust = 0, vjust = 1, color = "black", size = 5.5) +
     theme_bw() +
     theme(axis.title = element_blank(),
-          axis.text = element_text(size = 14, color = "black"))
+          axis.text = element_text(size = 14, color = "black")) +
+    scale_x_datetime(breaks = seq(as.POSIXct("1972-01-01"), 
+                                  as.POSIXct("2024-01-01"), 
+                                  by = "10 years"),
+                     date_labels = "%Y", expand = c(0, 0)) +
+    coord_cartesian(xlim = as.POSIXct(c("1972-01-01", "2024-01-01")))
   
   # Combine the three plots into one grid
   combined_plots <- plot_grid(NormPlot, Int1Plot, Int2Plot, 
@@ -559,13 +584,13 @@ for (group_name in names(correlation_list)) {
     theme(plot.background = element_rect(fill = "white"))
   
   # Combine the title and the plots
-  final_plot <- plot_grid(title, combined_plots, ncol = 1, rel_heights = c(0.1, 1))
+  final_plot <- plot_grid(title, combined_plots, ncol = 1, rel_heights = c(0.05, 1))
   
   file_name <- paste0(driver_name, "_", group_name, ".png")
   
   # Save plot
   ggsave(file.path(output_dir, file_name), final_plot, 
-         width = 8, height = 6, dpi = 300)
+         width = 8, height = 8, dpi = 300)
   
   # Store the final plot for the current driver
   group_plots_list[[driver_name]] <- final_plot
