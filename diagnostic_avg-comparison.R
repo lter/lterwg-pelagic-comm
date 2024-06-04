@@ -42,55 +42,55 @@ cce_v2 <- cce_v1 %>%
   dplyr::mutate(size_category = gsub(pattern = "size_|_biomass_mgCm2", replacement = "", 
                                      x = size_category)) %>% 
   # Join on size metadata info
-  dplyr::left_join(y = size_meta, by = c("size_category")) %>% 
-  # Log transform in diff ways
-  dplyr::mutate(log_biomass = log10(biomass_mgCm2),
-                min_biomass = min(biomass_mgCm2[biomass_mgCm2 > 0], na.rm = T),
-                nudge_log_biomass = log10( ( biomass_mgCm2 + (min_biomass / 2) ) ))
+  dplyr::left_join(y = size_meta, by = c("size_category"))
 
 # Re-check structure
 dplyr::glimpse(cce_v2)
 
-# Perform different averaging methods
-cce_avg <- cce_v2 %>% 
-  dplyr::group_by(size_midpoint) %>% 
-  dplyr::summarize(replicates = dplyr::n(),
-                   log_mean = mean(log_biomass, na.rm = T),
-                   log_sd = sd(log_biomass, na.rm = T),
-                   log_se = log_sd / sqrt(replicates),
-                   nudge_mean = mean(nudge_log_biomass, na.rm = T),
-                   nudge_sd = sd(nudge_log_biomass, na.rm = T),
-                   nudge_se = nudge_sd / sqrt(replicates)) %>% 
-  dplyr::ungroup() %>% 
-  # Pivot longer
-  tidyr::pivot_longer(cols = dplyr::starts_with(c("log_", "nudge_"))) %>% 
-  tidyr::separate_wider_delim(cols = name, delim = "_", names = c("trans", "metric")) %>% 
-  # Pivot wider
-  tidyr::pivot_wider(names_from = metric, values_from = value) %>% 
-  # Tweak transformation names
-  dplyr::mutate(trans = dplyr::case_when(
-    trans == "log" ~ "Log",
-    trans == "nudge" ~ "Log Nudge",
-    T ~ trans))
-  
-# Structure check
-dplyr::glimpse(cce_avg)
-# view(cce_avg)
+## ----------------------------- ##
+# Perform Transformations ----
+## ----------------------------- ##
 
-# Duplicate object to work on it safely
-cce_actual <- cce_avg %>% 
-  dplyr::mutate(slope = NA)
+# Duplicate the data object to work on it safely
+focal_df <- cce_v2
 
-# Identify slopes
-for(focal_trans in unique(cce_avg$trans)){
+# Create a list for storing graphs
+graph_list <- list()
+
+# Loop across the desired transformations
+for(focal_trans in c("log", "nudge log")){
   
-  # Subset the data to only that transformation
-  data_sub <- cce_avg %>% 
-    dplyr::filter(trans == focal_trans) %>% 
+  # Calculate desired transformation
+  ## Simple log10
+  if(focal_trans == "log"){
+    focal_df <- focal_df %>% 
+      dplyr::mutate(trans_biomass = log10(biomass_mgCm2))
+  }
+  
+  ## "Nudge" and take log
+  if(focal_trans == "nudge log"){
+    focal_df <- focal_df %>% 
+      dplyr::mutate(min_biomass = min(biomass_mgCm2[biomass_mgCm2 > 0], na.rm = T),
+                    trans_biomass = log10( ( biomass_mgCm2 + (min_biomass / 2) ) )) %>% 
+      dplyr::select(-min_biomass)
+  }
+  
+  # Take average of transformed biomass
+  focal_avg <- focal_df %>% 
+    dplyr::group_by(size_midpoint) %>% 
+    dplyr::summarize(replicates = dplyr::n(),
+                     mean = mean(trans_biomass, na.rm = T),
+                     std_dev = sd(trans_biomass, na.rm = T),
+                     std_err = std_dev / sqrt(replicates)) %>% 
+    dplyr::ungroup() %>% 
+    # And attach transformation type as a column
+    dplyr::mutate(trans = stringr::str_to_title(focal_trans),
+                  .before = dplyr::everything()) %>% 
+    # Remove bad numeric values (NA or infinity)
     dplyr::filter(!is.na(mean) & mean < Inf & mean > -Inf)
   
   # Fit model and get summary
-  mod_sumry <- summary(lm(mean ~ size_midpoint, data = data_sub))
+  mod_sumry <- summary(lm(mean ~ size_midpoint, data = focal_avg))
   
   # Extract coefficient table
   mod_table <- as.data.frame(mod_sumry$coefficients) %>%
@@ -103,11 +103,33 @@ for(focal_trans in unique(cce_avg$trans)){
     round(x = ., digits = 6)
   
   # Attach to data
-  cce_actual <- cce_actual %>% 
-    dplyr::mutate(slope = ifelse(trans == focal_trans,
-                                 yes = mod_slope,
-                                 no = slope))
-}
+  focal_avg <- focal_avg %>% 
+    dplyr::mutate(slope = mod_slope)
+  
+  # Create graph
+  p <- ggplot(focal_avg, aes(x = size_midpoint, y = mean, fill = trans)) +
+    geom_text(label = paste0("Slope = ", unique(focal_avg$slope)), 
+              x = 1750, y = 3.5) +
+    geom_smooth(method = "lm", formula = "y ~ x", se = F, color = "black") +
+    geom_errorbar(aes(ymax = mean + std_err, ymin = mean - std_err)) +
+    geom_point(pch = 21, size = 2.5) +
+    facet_grid(. ~ trans) +
+    lims(y = c(0, 4)) +
+    labs(x = "Size Midpoint", y = "Mean Biomass (mg C / m2)",
+         fill = "") +
+    theme_bw() +
+    theme(legend.position = "none")
+  
+  # Add to list
+  graph_list[[focal_trans]] <- p
+  
+  # Success message
+  message("Graph created for transformation: ", focal_trans)
+  
+} # Close loop
+
+  
+
 
 ## ----------------------------- ##
 # Graphing ----
