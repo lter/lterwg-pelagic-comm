@@ -1,4 +1,14 @@
+## ---------------------------------------------------- ##
+          # Transformation Average Comparisons
+## ---------------------------------------------------- ##
+# Script authors: Nick J Lyon, 
 
+# PURPOSE
+## Assess effects of various statistical transformations on the data
+
+## ----------------------------- ##
+        # Housekeeping ----
+## ----------------------------- ##
 # Load libraries
 librarian::shelf(tidyverse)
 
@@ -8,18 +18,22 @@ options(scipen = 999)
 # Clear environment
 rm(list = ls())
 
+## ----------------------------- ##
+      # Data Wrangling ----
+## ----------------------------- ##
+
 # Read in data
-cce_df <- readxl::read_excel(path = file.path("raw_data", "cce_sample-size-spectra_fixed.xlsx"))
+cce_v1 <- readxl::read_excel(path = file.path("raw_data", "cce_sample-size-spectra_fixed.xlsx"))
 
 # Check structure
-dplyr::glimpse(cce_df)
+dplyr::glimpse(cce_v1)
 
 # Grab size metadata info
 size_meta <- read.csv(file = file.path("raw_data", "cce_size-metadata.csv"))
 dplyr::glimpse(size_meta)
 
 # Perform needed wrangling
-cce_v2 <- cce_df %>% 
+cce_v2 <- cce_v1 %>% 
   # Pivot to long format
   tidyr::pivot_longer(cols = dplyr::starts_with("size_"),
                       names_to = "size_category",
@@ -95,6 +109,11 @@ for(focal_trans in unique(cce_avg$trans)){
                                  no = slope))
 }
 
+## ----------------------------- ##
+# Graphing ----
+## ----------------------------- ##
+
+
 # Demo plot
 ggplot(cce_actual, aes(x = size_midpoint, y = mean, fill = trans)) +
   geom_text(label = unique(cce_actual$slope), x = 2000, y = 2.5) +
@@ -109,4 +128,4 @@ ggplot(cce_actual, aes(x = size_midpoint, y = mean, fill = trans)) +
 
 
 
-
+# End ----
