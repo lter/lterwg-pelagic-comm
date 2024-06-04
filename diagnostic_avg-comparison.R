@@ -9,8 +9,12 @@
 ## ----------------------------- ##
         # Housekeeping ----
 ## ----------------------------- ##
+# Make a graphs folder if one doesn't exist already
+dir.create(path = file.path("graphs"), showWarnings = F)
+
 # Load libraries
-librarian::shelf(tidyverse)
+## install.packages("librarian")
+librarian::shelf(tidyverse, cowplot)
 
 # Make decimals not in scientific notation
 options(scipen = 999)
@@ -48,7 +52,7 @@ cce_v2 <- cce_v1 %>%
 dplyr::glimpse(cce_v2)
 
 ## ----------------------------- ##
-# Perform Transformations ----
+  # Perform Transformations ----
 ## ----------------------------- ##
 
 # Duplicate the data object to work on it safely
@@ -56,6 +60,10 @@ focal_df <- cce_v2
 
 # Create a list for storing graphs
 graph_list <- list()
+
+# Define colors for the various transformations
+## Note that this needs to be in 'title case' to match columns made later
+plot_colors <- c("Log" = "#8338ec", "Nudge Log" = "#3a86ff", "Tweedie" = "#fb5607")
 
 # Loop across the desired transformations
 for(focal_trans in c("log", "nudge log")){
@@ -109,14 +117,16 @@ for(focal_trans in c("log", "nudge log")){
   # Create graph
   p <- ggplot(focal_avg, aes(x = size_midpoint, y = mean, fill = trans)) +
     geom_text(label = paste0("Slope = ", unique(focal_avg$slope)), 
-              x = 1750, y = 3.5) +
+              x = 1000 + min(focal_avg$size_midpoint, na.rm = T),
+              y = 3.5) +
     geom_smooth(method = "lm", formula = "y ~ x", se = F, color = "black") +
     geom_errorbar(aes(ymax = mean + std_err, ymin = mean - std_err)) +
-    geom_point(pch = 21, size = 2.5) +
+    geom_point(pch = 21, size = 2) +
     facet_grid(. ~ trans) +
-    lims(y = c(0, 4)) +
+    lims(y = c(1, 4), x = c(0, max(cce_v2$size_midpoint, na.rm = T))) +
     labs(x = "Size Midpoint", y = "Mean Biomass (mg C / m2)",
          fill = "") +
+    scale_fill_manual(values = plot_colors) +
     theme_bw() +
     theme(legend.position = "none")
   
@@ -128,26 +138,15 @@ for(focal_trans in c("log", "nudge log")){
   
 } # Close loop
 
-  
-
-
 ## ----------------------------- ##
 # Graphing ----
 ## ----------------------------- ##
 
+# Create a multi-panel graph
+cowplot::plot_grid(plotlist = graph_list, labels = "", nrow = 1)
 
-# Demo plot
-ggplot(cce_actual, aes(x = size_midpoint, y = mean, fill = trans)) +
-  geom_text(label = unique(cce_actual$slope), x = 2000, y = 2.5) +
-  geom_smooth(method = "lm", formula = "y ~ x", se = F, color = "black") +
-  geom_errorbar(aes(ymax = mean + se, ymin = mean - se)) +
-  geom_point(pch = 21, size = 2.5) +
-  facet_grid(. ~ trans) +
-  labs(x = "Size Midpoint", y = "Mean Biomass (mg C / m2)",
-       fill = "") +
-  theme_bw() +
-  theme(legend.position = "none")
-
-
+# Export
+ggsave(filename = file.path("graphs", "transformation-comparisons.png"),
+       width = 8, height = 4, units = "in")
 
 # End ----
