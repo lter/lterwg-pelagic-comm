@@ -75,7 +75,7 @@ for (j in 1:length(raw_files)){
     # Get the station and cruise metadata by grabbing relevant rows and columns
     station <- tidy_v1 %>%
       dplyr::slice(2) %>%
-      dplyr::select(CRUNAM, STA, GERCOD, VOLSML, ALQFCTR, TOTCNT)
+      dplyr::select(CRUNAM, STA, GERCOD, BONNUM, VOLSML, ALQFCTR, TOTCNT)
     
     # Grab the indices of the copepoda rows
     cope_indices <- which(tidy_v1$CRUCOD=="\"MAJOR COPEPODA TAXA\"")
