@@ -76,7 +76,7 @@ for (j in 1:length(raw_files)){
     # Get the station and cruise metadata by grabbing relevant rows and columns
     station <- tidy_v1 %>%
       dplyr::slice(1) %>%
-      dplyr::select(CRUNAM, STA, GERCOD)
+      dplyr::select(CRUNAM, STA, GERCOD, BONNUM)
     
     # Get the non-major copepoda data by grabbing relevant rows and columns
     # Rename columns as needed
