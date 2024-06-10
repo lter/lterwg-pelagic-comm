@@ -47,4 +47,5 @@ vignettes/*.pdf
 # Ignore particular folders
 raw_data/
 tidy/
+graphs/
 
