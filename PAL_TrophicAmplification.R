@@ -52,10 +52,11 @@ zoopNorth <- zoopBV %>%
   subset(Rnd100GridLine > 300 & Rnd100GridLine < 700 &
            totalVol > 0)
 
-zoopNorthClean <- aggregate(zoopNorth$totalVol, by = list(Year = zoopNorth$Year,
-                                                  rnd100GridLine = zoopNorth$Rnd100GridLine,
-                                                  rnd020GridStation = zoopNorth$Rnd020GridStn),
-                        FUN = mean)
+zoopNorthClean <- aggregate(zoopNorth$totalVol,
+                            by = list(Year = zoopNorth$Year,
+                                      rnd100GridLine = zoopNorth$Rnd100GridLine,
+                                      rnd020GridStation = zoopNorth$Rnd020GridStn),
+                            FUN = mean)
 
 colnames(zoopNorthClean)[4] <- "totalBV"
 
@@ -76,14 +77,24 @@ zoop.run.mean.north <- rollmean(annualNorth_zoopBV$logZoopBV, k = 5)
 
 sd(zoop.run.mean.north)
 
-plot(logZoopBV ~ Year, data = annualNorth_zoopBV, type = "b",
-     main = "PAL North total zoop biovolume, std. dev. = 0.079",
-     ylim = c(0.8, 2.5), xlim = c(1990, 2020), ylab = "logZoop")
+plot(annualNorth_zoopBV$Year, annualNorth_zoopBV$logZoopBV,
+     type = "b",
+     main = paste("PAL North total zoop biovolume, std. dev. = ", round(sd(zoop.run.mean.north), digits = 3)),
+     ylim = c(0.8, 2.5),
+     xlim = c(1990, 2020),
+     ylab = "logZoop")
+
 par(new = T)
-plot(zoop.run.mean.north ~ seq(1995, 2018), type = "l",
-     col = "red", lwd = 3,
-     ylim = c(0.8, 2.5), xlim = c(1990, 2020),
-     ylab = "", xlab = "")
+
+plot(seq(1995, 2018),
+     zoop.run.mean.north,
+     type = "l",
+     col = "red",
+     lwd = 3,
+     ylim = c(0.8, 2.5),
+     xlim = c(1990, 2020),
+     ylab = "",
+     xlab = "")
 
 # total zoop biovolume - south
 
@@ -93,9 +104,10 @@ zoopSouth <- zoopBV %>%
   subset(Rnd100GridLine > 100 & Rnd100GridLine < 400 &
            totalVol > 0)
 
-zoopSouthClean <- aggregate(zoopSouth$totalVol, by = list(Year = zoopSouth$Year,
-                                                          rnd100GridLine = zoopSouth$Rnd100GridLine,
-                                                          rnd020GridStation = zoopSouth$Rnd020GridStn),
+zoopSouthClean <- aggregate(zoopSouth$totalVol,
+                            by = list(Year = zoopSouth$Year,
+                                      rnd100GridLine = zoopSouth$Rnd100GridLine,
+                                      rnd020GridStation = zoopSouth$Rnd020GridStn),
                             FUN = mean)
 
 colnames(zoopSouthClean)[4] <- "totalBV"
@@ -110,21 +122,32 @@ hist(zoopSouthClean$logZoopBV)
 
 annualSouth_zoopBV <- aggregate(logZoopBV ~ Year, zoopSouthClean, mean)
 
-plot(logZoopBV ~ Year, data = annualSouth_zoopBV, type = "b",
+plot(logZoopBV ~ Year,
+     data = annualSouth_zoopBV,
+     type = "b",
      main = "Total zooplankton biovolume - South")
 
 zoop.run.mean.south <- rollmean(annualSouth_zoopBV$logZoopBV, k = 5)
 
 sd(zoop.run.mean.south)
 
-plot(logZoopBV ~ Year, data = annualSouth_zoopBV, type = "b",
-     main = "PAL South total zoop biovolume, std. dev. = 0.16",
-     ylim = c(0.8, 2.5), xlim = c(1990, 2020), ylab = "logZoop")
+plot(logZoopBV ~ Year,
+     data = annualSouth_zoopBV,
+     type = "b",
+     main = paste("PAL South total zoop biovolume, std. dev. = ", round(sd(zoop.run.mean.south), digits = 3)),
+     ylim = c(0.8, 2.5),
+     xlim = c(1990, 2020),
+     ylab = "logZoop")
+
 par(new = T)
-plot(zoop.run.mean.south ~ seq(1995, 2018), type = "l",
-     col = "red", lwd = 3,
-     ylim = c(0.8, 2.5), xlim = c(1990, 2020),
-     ylab = "", xlab = "")
+plot(zoop.run.mean.south ~ seq(1995, 2018),
+     type = "l",
+     col = "red",
+     lwd = 3,
+     ylim = c(0.8, 2.5),
+     xlim = c(1990, 2020),
+     ylab = "",
+     xlab = "")
 
 
 
@@ -135,9 +158,10 @@ fishNorth <- zoopBV %>%
   drop_na(fishVol) %>% 
   subset(Rnd100GridLine > 300 & Rnd100GridLine < 700)
 
-fishNorthClean <- aggregate(fishNorth$fishVol, by = list(Year = fishNorth$Year,
-                                                          rnd100GridLine = fishNorth$Rnd100GridLine,
-                                                          rnd020GridStation = fishNorth$Rnd020GridStn),
+fishNorthClean <- aggregate(fishNorth$fishVol,
+                            by = list(Year = fishNorth$Year,
+                                      rnd100GridLine = fishNorth$Rnd100GridLine,
+                                      rnd020GridStation = fishNorth$Rnd020GridStn),
                             FUN = mean)
 
 colnames(fishNorthClean)[4] <- "fishBV"
@@ -156,21 +180,31 @@ hist(fishNorthClean$logFishBV)
 
 annualNorth_fishBV <- aggregate(logFishBV ~ Year, fishNorthClean, mean)
 
-plot(logFishBV ~ Year, data = annualNorth_fishBV, type = "b",
-     main = "Fish biovolume - North")
+plot(logFishBV ~ Year,
+     data = annualNorth_fishBV,
+     type = "b",
+     main = "PAL North fish biovolume")
 
 fish.run.mean.north <- rollmean(annualNorth_fishBV$logFishBV, k = 5)
 
 sd(fish.run.mean.north)
 
-plot(logFishBV ~ Year, data = annualNorth_fishBV, type = "b",
-     main = "PAL North fish biovolume, std. dev. = 0.095",
-     ylim = c(-2, -0.5), xlim = c(1990, 2020), ylab = "logFish")
+plot(logFishBV ~ Year,
+     data = annualNorth_fishBV, type = "b",
+     main = paste("PAL North fish biovolume, std. dev. = ", round(sd(fish.run.mean.north), digits = 3)),
+     ylim = c(-2, -0.5),
+     xlim = c(1990, 2020),
+     ylab = "logFish")
+
 par(new = T)
-plot(fish.run.mean.north ~ seq(2011, 2018), type = "l",
-     col = "red", lwd = 3,
-     ylim = c(-2, -0.5), xlim = c(1990, 2020),
-     ylab = "", xlab = "")
+plot(fish.run.mean.north ~ seq(2011, 2018),
+     type = "l",
+     col = "red",
+     lwd = 3,
+     ylim = c(-2, -0.5),
+     xlim = c(1990, 2020),
+     ylab = "",
+     xlab = "")
 
 
 # fish biovolume - south
@@ -180,9 +214,10 @@ fishSouth <- zoopBV %>%
   drop_na(fishVol) %>% 
   subset(Rnd100GridLine > 100 & Rnd100GridLine < 400)
 
-fishSouthClean <- aggregate(fishSouth$fishVol, by = list(Year = fishSouth$Year,
-                                                         rnd100GridLine = fishSouth$Rnd100GridLine,
-                                                         rnd020GridStation = fishSouth$Rnd020GridStn),
+fishSouthClean <- aggregate(fishSouth$fishVol,
+                            by = list(Year = fishSouth$Year,
+                                      rnd100GridLine = fishSouth$Rnd100GridLine,
+                                      rnd020GridStation = fishSouth$Rnd020GridStn),
                             FUN = mean)
 
 colnames(fishSouthClean)[4] <- "fishBV"
@@ -201,21 +236,32 @@ hist(fishSouthClean$logFishBV)
 
 annualSouth_fishBV <- aggregate(logFishBV ~ Year, fishSouthClean, mean)
 
-plot(logFishBV ~ Year, data = annualSouth_fishBV, type = "b",
-     main = "Fish biovolume - South")
+plot(logFishBV ~ Year,
+     data = annualSouth_fishBV,
+     type = "b",
+     main = "PAL South fish biovolume")
 
 fish.run.mean.south <- rollmean(annualSouth_fishBV$logFishBV, k = 5)
 
 sd(fish.run.mean.south)
 
-plot(logFishBV ~ Year, data = annualSouth_fishBV, type = "b",
-     main = "PAL South fish biovolume, std. dev. = 0.13",
-     ylim = c(-2, -0.5), xlim = c(1990, 2020), ylab = "logFish")
+plot(logFishBV ~ Year,
+     data = annualSouth_fishBV,
+     type = "b",
+     main = paste("PAL South fish biovolume, std. dev. = ", round(sd(fish.run.mean.south), digits = 3)),
+     ylim = c(-2, -0.5),
+     xlim = c(1990, 2020),
+     ylab = "logFish")
+
 par(new = T)
-plot(fish.run.mean.south ~ seq(2011, 2018), type = "l",
-     col = "red", lwd = 3,
-     ylim = c(-2, -0.5), xlim = c(1990, 2020),
-     ylab = "", xlab = "")
+plot(fish.run.mean.south ~ seq(2011, 2018),
+     type = "l",
+     col = "red",
+     lwd = 3,
+     ylim = c(-2, -0.5),
+     xlim = c(1990, 2020),
+     ylab = "",
+     xlab = "")
 
 
 # chlorophyll a - north
@@ -264,21 +310,34 @@ hist(chlNorthStns$logChl)
 
 AnnualNorth_Chl <- aggregate(logChl ~ Year, chlNorthStns, mean)
 
-plot(logChl ~ Year, data = AnnualNorth_Chl, pch = 16, type = 'b',
-     lwd = 3,  main = "Surface chlorophyll a - North")
+plot(logChl ~ Year,
+     data = AnnualNorth_Chl,
+     pch = 16,
+     type = 'b',
+     lwd = 3, 
+     main = "Surface chlorophyll a - North")
 
 chl.run.mean.north <- rollmean(AnnualNorth_Chl$logChl, k = 5)
 
 sd(chl.run.mean.north)
 
-plot(logChl ~ Year, data = AnnualNorth_Chl, type = "b",
-     main = "PAL North chl a, std. dev. = 0.128",
-     ylim = c(-0.5, 1), xlim = c(1990, 2020), ylab = "logChl")
+plot(logChl ~ Year,
+     data = AnnualNorth_Chl,
+     type = "b",
+     main = paste("PAL North chl a, std. dev. = ", round(sd(chl.run.mean.north), digits = 3)),
+     ylim = c(-0.5, 1),
+     xlim = c(1990, 2020),
+     ylab = "logChl")
+
 par(new = T)
-plot(chl.run.mean.north ~ seq(1995, 2018), type = "l",
-     col = "red", lwd = 3,
-     ylim = c(-0.5, 1), xlim = c(1990, 2020),
-     ylab = "", xlab = "")
+plot(chl.run.mean.north ~ seq(1995, 2018),
+     type = "l",
+     col = "red",
+     lwd = 3,
+     ylim = c(-0.5, 1),
+     xlim = c(1990, 2020),
+     ylab = "",
+     xlab = "")
 
 
 # chlorophyll a - south
@@ -327,21 +386,34 @@ hist(chlSouthStns$logChl)
 
 AnnualSouth_Chl <- aggregate(logChl ~ Year, chlSouthStns, mean)
 
-plot(logChl ~ Year, data = AnnualSouth_Chl, pch = 16, type = 'b',
-     lwd = 3,  main = "Surface chlorophyll a - South")
+plot(logChl ~ Year,
+     data = AnnualSouth_Chl,
+     pch = 16,
+     type = 'b',
+     lwd = 3, 
+     main = "Surface chlorophyll a - South")
 
 chl.run.mean.south <- rollmean(AnnualSouth_Chl$logChl, k = 5)
 
 sd(chl.run.mean.south)
 
-plot(logChl ~ Year, data = AnnualSouth_Chl, type = "b",
-     main = "PAL South chl a, std. dev. = 0.129",
-     ylim = c(-0.5, 1), xlim = c(1990, 2020), ylab = "logChl")
+plot(logChl ~ Year,
+     data = AnnualSouth_Chl,
+     type = "b",
+     main = paste("PAL South chl a, std. dev. = ", round(sd(chl.run.mean.south), digits = 3)),
+     ylim = c(-0.5, 1),
+     xlim = c(1990, 2020), 
+     ylab = "logChl")
+
 par(new = T)
-plot(chl.run.mean.south ~ seq(1995, 2018), type = "l",
-     col = "red", lwd = 3,
-     ylim = c(-0.5, 1), xlim = c(1990, 2020),
-     ylab = "", xlab = "")
+plot(chl.run.mean.south ~ seq(1995, 2018),
+     type = "l",
+     col = "red",
+     lwd = 3,
+     ylim = c(-0.5, 1),
+     xlim = c(1990, 2020),
+     ylab = "",
+     xlab = "")
 
 # compile time series to send to Stukel
 
