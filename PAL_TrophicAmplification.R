@@ -318,7 +318,6 @@ plot(logChl ~ Year,
      pch = 16,
      type = 'b',
      lwd = 3, 
-     lwd = 3,
      main = "Surface chlorophyll a - North")
 
 chl.run.mean.north <- rollmean(AnnualNorth_Chl$logChl, k = 5)
