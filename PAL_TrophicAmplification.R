@@ -77,6 +77,7 @@ zoop.run.mean.north <- rollmean(annualNorth_zoopBV$logZoopBV, k = 5)
 
 sd(zoop.run.mean.north)
 
+
 plot(annualNorth_zoopBV$Year, annualNorth_zoopBV$logZoopBV,
      type = "b",
      main = paste("PAL North total zoop biovolume, std. dev. = ", round(sd(zoop.run.mean.north), digits = 3)),
@@ -85,7 +86,6 @@ plot(annualNorth_zoopBV$Year, annualNorth_zoopBV$logZoopBV,
      ylab = "logZoop")
 
 par(new = T)
-
 plot(seq(1995, 2018),
      zoop.run.mean.north,
      type = "l",
@@ -124,12 +124,14 @@ annualSouth_zoopBV <- aggregate(logZoopBV ~ Year, zoopSouthClean, mean)
 
 plot(logZoopBV ~ Year,
      data = annualSouth_zoopBV,
+
      type = "b",
      main = "Total zooplankton biovolume - South")
 
 zoop.run.mean.south <- rollmean(annualSouth_zoopBV$logZoopBV, k = 5)
 
 sd(zoop.run.mean.south)
+
 
 plot(logZoopBV ~ Year,
      data = annualSouth_zoopBV,
@@ -148,7 +150,6 @@ plot(zoop.run.mean.south ~ seq(1995, 2018),
      xlim = c(1990, 2020),
      ylab = "",
      xlab = "")
-
 
 
 # fish biovolume - north
@@ -188,6 +189,7 @@ plot(logFishBV ~ Year,
 fish.run.mean.north <- rollmean(annualNorth_fishBV$logFishBV, k = 5)
 
 sd(fish.run.mean.north)
+
 
 plot(logFishBV ~ Year,
      data = annualNorth_fishBV, type = "b",
@@ -244,6 +246,7 @@ plot(logFishBV ~ Year,
 fish.run.mean.south <- rollmean(annualSouth_fishBV$logFishBV, k = 5)
 
 sd(fish.run.mean.south)
+
 
 plot(logFishBV ~ Year,
      data = annualSouth_fishBV,
@@ -315,6 +318,7 @@ plot(logChl ~ Year,
      pch = 16,
      type = 'b',
      lwd = 3, 
+     lwd = 3,
      main = "Surface chlorophyll a - North")
 
 chl.run.mean.north <- rollmean(AnnualNorth_Chl$logChl, k = 5)
@@ -402,7 +406,7 @@ plot(logChl ~ Year,
      type = "b",
      main = paste("PAL South chl a, std. dev. = ", round(sd(chl.run.mean.south), digits = 3)),
      ylim = c(-0.5, 1),
-     xlim = c(1990, 2020), 
+     xlim = c(1990, 2020),
      ylab = "logChl")
 
 par(new = T)
@@ -414,6 +418,7 @@ plot(chl.run.mean.south ~ seq(1995, 2018),
      xlim = c(1990, 2020),
      ylab = "",
      xlab = "")
+
 
 # compile time series to send to Stukel
 
