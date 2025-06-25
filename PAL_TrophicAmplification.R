@@ -2,8 +2,9 @@
 # Jack Conroy
 # jaconroy@ucsc.edu
 # 2 Nov 2023
-# Test for trophic amplification at PAL using 2x2 m zoop biovolume and
-# surface chl time series
+# updated 27 Jan 2025
+# Prep data to test for trophic amplification at PAL using 2x2 m zoop biovolume,
+# fish biovolume, and surface chl time series
 
 ## ------------------------------------------ ##
 #            Housekeeping -----
@@ -46,10 +47,10 @@ for(k in 1:nrow(raw_PAL_ids)){
 zoopBV <- read.csv(file.path("raw_data", site, "PAL_2m_BV.csv"))
 
 zoopNorth <- zoopBV %>%
+  mutate(totalVol = as.numeric(totalVol)) %>% 
   drop_na(totalVol) %>% 
-  subset(Rnd100GridLine > 300 & Rnd100GridLine < 700)
-
-zoopNorth$totalVol <- as.numeric(zoopNorth$totalVol)
+  subset(Rnd100GridLine > 300 & Rnd100GridLine < 700 &
+           totalVol > 0)
 
 zoopNorthClean <- aggregate(zoopNorth$totalVol, by = list(Year = zoopNorth$Year,
                                                   rnd100GridLine = zoopNorth$Rnd100GridLine,
@@ -58,24 +59,25 @@ zoopNorthClean <- aggregate(zoopNorth$totalVol, by = list(Year = zoopNorth$Year,
 
 colnames(zoopNorthClean)[4] <- "totalBV"
 
-zoopNorthClean <- na.omit(zoopNorthClean)
-
 min(zoopNorthClean$totalBV)
 
-zoopNorthClean$adjTotalBV <- log10(zoopNorthClean$totalBV)
-hist(zoopNorthClean$adjTotalBV)
+hist(zoopNorthClean$totalBV)
 
-annualNorth_TotalBV <- aggregate(adjTotalBV ~ Year, zoopNorthClean, mean)
+zoopNorthClean$logZoopBV <- log10(zoopNorthClean$totalBV)
 
-plot(adjTotalBV ~ Year, data = annualNorth_TotalBV, type = "b",
+hist(zoopNorthClean$logZoopBV)
+
+annualNorth_zoopBV <- aggregate(logZoopBV ~ Year, zoopNorthClean, mean)
+
+plot(logZoopBV ~ Year, data = annualNorth_zoopBV, type = "b",
      main = "Total zooplankton biovolume - North")
 
-zoop.run.mean.north <- rollmean(annualNorth_TotalBV$adjTotalBV, k = 5)
+zoop.run.mean.north <- rollmean(annualNorth_zoopBV$logZoopBV, k = 5)
 
 sd(zoop.run.mean.north)
 
-plot(adjTotalBV ~ Year, data = annualNorth_TotalBV, type = "b",
-     main = "PAL North total zoop biovolume, std. dev. = 0.083",
+plot(logZoopBV ~ Year, data = annualNorth_zoopBV, type = "b",
+     main = "PAL North total zoop biovolume, std. dev. = 0.079",
      ylim = c(0.8, 2.5), xlim = c(1990, 2020), ylab = "logZoop")
 par(new = T)
 plot(zoop.run.mean.north ~ seq(1995, 2018), type = "l",
@@ -86,10 +88,10 @@ plot(zoop.run.mean.north ~ seq(1995, 2018), type = "l",
 # total zoop biovolume - south
 
 zoopSouth <- zoopBV %>%
+  mutate(totalVol = as.numeric(totalVol)) %>% 
   drop_na(totalVol) %>% 
-  subset(Rnd100GridLine > 100 & Rnd100GridLine < 400)
-
-zoopSouth$totalVol <- as.numeric(zoopSouth$totalVol)
+  subset(Rnd100GridLine > 100 & Rnd100GridLine < 400 &
+           totalVol > 0)
 
 zoopSouthClean <- aggregate(zoopSouth$totalVol, by = list(Year = zoopSouth$Year,
                                                           rnd100GridLine = zoopSouth$Rnd100GridLine,
@@ -98,29 +100,25 @@ zoopSouthClean <- aggregate(zoopSouth$totalVol, by = list(Year = zoopSouth$Year,
 
 colnames(zoopSouthClean)[4] <- "totalBV"
 
-zoopSouthClean <- na.omit(zoopSouthClean)
-
 min(zoopSouthClean$totalBV)
 
-nonZeroZoopSouthClean <- subset(zoopSouthClean$totalBV,
-                                zoopSouthClean$totalBV > 0)
-min(nonZeroZoopSouthClean)
+hist(zoopSouthClean$totalBV)
 
-zoopSouthClean$adjTotalBV <- log10(zoopSouthClean$totalBV + min(nonZeroZoopSouthClean) / 2)
+zoopSouthClean$logZoopBV <- log10(zoopSouthClean$totalBV)
 
-hist(zoopSouthClean$adjTotalBV)
+hist(zoopSouthClean$logZoopBV)
 
-annualSouth_TotalBV <- aggregate(adjTotalBV ~ Year, zoopSouthClean, mean)
+annualSouth_zoopBV <- aggregate(logZoopBV ~ Year, zoopSouthClean, mean)
 
-plot(adjTotalBV ~ Year, data = annualSouth_TotalBV, type = "b",
+plot(logZoopBV ~ Year, data = annualSouth_zoopBV, type = "b",
      main = "Total zooplankton biovolume - South")
 
-zoop.run.mean.south <- rollmean(annualSouth_TotalBV$adjTotalBV, k = 5)
+zoop.run.mean.south <- rollmean(annualSouth_zoopBV$logZoopBV, k = 5)
 
 sd(zoop.run.mean.south)
 
-plot(adjTotalBV ~ Year, data = annualSouth_TotalBV, type = "b",
-     main = "PAL South total zoop biovolume, std. dev. = 0.168",
+plot(logZoopBV ~ Year, data = annualSouth_zoopBV, type = "b",
+     main = "PAL South total zoop biovolume, std. dev. = 0.16",
      ylim = c(0.8, 2.5), xlim = c(1990, 2020), ylab = "logZoop")
 par(new = T)
 plot(zoop.run.mean.south ~ seq(1995, 2018), type = "l",
@@ -129,40 +127,43 @@ plot(zoop.run.mean.south ~ seq(1995, 2018), type = "l",
      ylab = "", xlab = "")
 
 
+
 # fish biovolume - north
 
 fishNorth <- zoopBV %>%
+  mutate(fishVol = as.numeric(fishVol)) %>% 
   drop_na(fishVol) %>% 
   subset(Rnd100GridLine > 300 & Rnd100GridLine < 700)
 
-fishNorth$fishVol <- as.numeric(fishNorth$fishVol)
-
 fishNorthClean <- aggregate(fishNorth$fishVol, by = list(Year = fishNorth$Year,
-                                               rnd100GridLine = fishNorth$Rnd100GridLine,
-                                               rnd020GridStation = fishNorth$Rnd020GridStn),
-                       FUN = mean)
+                                                          rnd100GridLine = fishNorth$Rnd100GridLine,
+                                                          rnd020GridStation = fishNorth$Rnd020GridStn),
+                            FUN = mean)
 
 colnames(fishNorthClean)[4] <- "fishBV"
 
-fishNorthClean <- na.omit(fishNorthClean)
-
 min(fishNorthClean$fishBV)
+
+hist(fishNorthClean$fishBV)
 
 nonZeroFishNorthClean <- subset(fishNorthClean$fishBV, fishNorthClean$fishBV > 0)
 min(nonZeroFishNorthClean)
 
-fishNorthClean$adjFishBV <- log10(fishNorthClean$fishBV + min(nonZeroFishNorthClean) / 2)
+fishNorthClean$logFishBV <- log10(fishNorthClean$fishBV + 
+                                    min(nonZeroFishNorthClean) / 2)
 
-annualNorth_FishBV <- aggregate(adjFishBV ~ Year, fishNorthClean, mean)
+hist(fishNorthClean$logFishBV)
 
-plot(adjFishBV ~ Year, data = annualNorth_FishBV, type = "b",
-     main = "PAL North fish biovolume")
+annualNorth_fishBV <- aggregate(logFishBV ~ Year, fishNorthClean, mean)
 
-fish.run.mean.north <- rollmean(annualNorth_FishBV$adjFishBV, k = 5)
+plot(logFishBV ~ Year, data = annualNorth_fishBV, type = "b",
+     main = "Fish biovolume - North")
+
+fish.run.mean.north <- rollmean(annualNorth_fishBV$logFishBV, k = 5)
 
 sd(fish.run.mean.north)
 
-plot(adjFishBV ~ Year, data = annualNorth_FishBV, type = "b",
+plot(logFishBV ~ Year, data = annualNorth_fishBV, type = "b",
      main = "PAL North fish biovolume, std. dev. = 0.095",
      ylim = c(-2, -0.5), xlim = c(1990, 2020), ylab = "logFish")
 par(new = T)
@@ -171,13 +172,13 @@ plot(fish.run.mean.north ~ seq(2011, 2018), type = "l",
      ylim = c(-2, -0.5), xlim = c(1990, 2020),
      ylab = "", xlab = "")
 
+
 # fish biovolume - south
 
 fishSouth <- zoopBV %>%
+  mutate(fishVol = as.numeric(fishVol)) %>% 
   drop_na(fishVol) %>% 
   subset(Rnd100GridLine > 100 & Rnd100GridLine < 400)
-
-fishSouth$fishVol <- as.numeric(fishSouth$fishVol)
 
 fishSouthClean <- aggregate(fishSouth$fishVol, by = list(Year = fishSouth$Year,
                                                          rnd100GridLine = fishSouth$Rnd100GridLine,
@@ -186,26 +187,29 @@ fishSouthClean <- aggregate(fishSouth$fishVol, by = list(Year = fishSouth$Year,
 
 colnames(fishSouthClean)[4] <- "fishBV"
 
-fishSouthClean <- na.omit(fishSouthClean)
-
 min(fishSouthClean$fishBV)
+
+hist(fishSouthClean$fishBV)
 
 nonZeroFishSouthClean <- subset(fishSouthClean$fishBV, fishSouthClean$fishBV > 0)
 min(nonZeroFishSouthClean)
 
-fishSouthClean$adjFishBV <- log10(fishSouthClean$fishBV + min(nonZeroFishSouthClean) / 2)
+fishSouthClean$logFishBV <- log10(fishSouthClean$fishBV + 
+                                    min(nonZeroFishSouthClean) / 2)
 
-annualSouth_FishBV <- aggregate(adjFishBV ~ Year, fishSouthClean, mean)
+hist(fishSouthClean$logFishBV)
 
-plot(adjFishBV ~ Year, data = annualSouth_FishBV, type = "b",
-     main = "PAL South fish biovolume")
+annualSouth_fishBV <- aggregate(logFishBV ~ Year, fishSouthClean, mean)
 
-fish.run.mean.south <- rollmean(annualSouth_FishBV$adjFishBV, k = 5)
+plot(logFishBV ~ Year, data = annualSouth_fishBV, type = "b",
+     main = "Fish biovolume - South")
+
+fish.run.mean.south <- rollmean(annualSouth_fishBV$logFishBV, k = 5)
 
 sd(fish.run.mean.south)
 
-plot(adjFishBV ~ Year, data = annualSouth_FishBV, type = "b",
-     main = "PAL South fish biovolume, std. dev. = 0.113",
+plot(logFishBV ~ Year, data = annualSouth_fishBV, type = "b",
+     main = "PAL South fish biovolume, std. dev. = 0.13",
      ylim = c(-2, -0.5), xlim = c(1990, 2020), ylab = "logFish")
 par(new = T)
 plot(fish.run.mean.south ~ seq(2011, 2018), type = "l",
@@ -339,5 +343,18 @@ plot(chl.run.mean.south ~ seq(1995, 2018), type = "l",
      ylim = c(-0.5, 1), xlim = c(1990, 2020),
      ylab = "", xlab = "")
 
+# compile time series to send to Stukel
 
-
+# palTimeSeries <- as.data.frame(matrix(data = c(1993:2020,
+#                                            AnnualNorth_Chl$logChl,
+#                                            AnnualSouth_Chl$logChl,
+#                                            annualNorth_zoopBV$logZoopBV,
+#                                            annualSouth_zoopBV$logZoopBV,
+#                                            rep(NA, 16), annualNorth_fishBV$logFishBV,
+#                                            rep(NA, 16), annualSouth_fishBV$logFishBV),
+#                                   nrow = 28, ncol = 7,
+# dimnames = list(NULL, c("Year", "ChlNorth", "ChlSouth",
+#                         "ZoopNorth", "ZoopSouth",
+#                         "FishNorth", "FishSouth"))))
+# 
+# write_csv(palTimeSeries, "PAL time series.csv")
